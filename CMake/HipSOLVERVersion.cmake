@@ -1,0 +1,1 @@
+set(HipSOLVER_VERSION "0.0.0")

@@ -1,0 +1,6 @@
+#pragma once
+
+#define hipsolverVersionMajor @PROJECT_VERSION_MAJOR@
+#define hipsolverVersionMinor @PROJECT_VERSION_MINOR@
+#define hipsolverVersionPatch @PROJECT_VERSION_PATCH@
+#define hipsolverVersionTweak 0	// We don't use a tweak.

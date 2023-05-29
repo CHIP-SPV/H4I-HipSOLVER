@@ -1,0 +1,10 @@
+
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(MKLShim)
+
+include ( "${CMAKE_CURRENT_LIST_DIR}/HipSOLVER.cmake" )
+set_and_check(H4I_HipSOLVER_INCLUDE_DIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
+set(H4I_HipSOLVER_LIBRARIES H4I::HipSOLVER)
+check_required_components(HipSOLVER)
