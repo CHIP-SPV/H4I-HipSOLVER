@@ -38,10 +38,18 @@ install(TARGETS HipSOLVER
 )
 install(FILES
     ${CMAKE_BINARY_DIR}/include/hipsolver.h
-    ${CMAKE_BINARY_DIR}/include/internal/hipsolver-version.h
-    ${CMAKE_SOURCE_DIR}/include/internal/hipsolver-export.h
-    TYPE INCLUDE
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/
 )
+
+install(FILES
+    ${CMAKE_BINARY_DIR}/include/internal/hipsolver-version.h
+    ${CMAKE_BINARY_DIR}/include/internal/hipsolver-types.h
+    ${CMAKE_BINARY_DIR}/include/internal/hipsolver-functions.h
+    ${CMAKE_BINARY_DIR}/include/internal/hipsolver-compat.h
+    ${CMAKE_SOURCE_DIR}/include/internal/hipsolver-export.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/internal/
+)
+
 
 install(EXPORT HipSOLVER
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/HipSOLVER
