@@ -59,6 +59,18 @@ inline H4I::MKLShim::onemklTranspose convert(hipsolverOperation_t val) {
     }
 }
 
+inline int64_t convert(hipsolverEigType_t t) {
+  switch(t){
+    case HIPSOLVER_EIG_TYPE_1:
+      return 1;
+    case HIPSOLVER_EIG_TYPE_2:
+      return 2;
+    case HIPSOLVER_EIG_TYPE_3:
+      return 3;
+    default:
+      return -1; // error: Never come here
+  }
+}
 // gebrd
 hipsolverStatus_t hipsolverSgebrd_bufferSize(hipsolverHandle_t handle,
                                              int               m,
@@ -2334,4 +2346,192 @@ hipsolverStatus_t hipsolverZhetrd(hipsolverHandle_t   handle,
   H4I::MKLShim::Zhetrd(ctxt, convert(uplo), n, (double _Complex*)A, lda, D, E, (double _Complex*)tau, (double _Complex*)work, lwork);
   return HIPSOLVER_STATUS_SUCCESS;
   HIPSOLVER_CATCH("Zhetrd")
+}
+
+// sygvd/hegvd
+hipsolverStatus_t hipsolverSsygvd_bufferSize(hipsolverHandle_t   handle,
+                                            hipsolverEigType_t  itype,
+                                            hipsolverEigMode_t  jobz,
+                                            hipsolverFillMode_t uplo,
+                                            int                 n,
+                                            float*              A,
+                                            int                 lda,
+                                            float*              B,
+                                            int                 ldb,
+                                            float*              W,
+                                            int*                lwork){
+  HIPSOLVER_TRY
+  if (A == nullptr || B == nullptr || W == nullptr || lwork == nullptr) {
+      return HIPSOLVER_STATUS_INVALID_VALUE;
+  }
+  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
+
+  auto size = H4I::MKLShim::Ssygvd_ScPadSz(ctxt, convert(itype), convert(jobz), convert(uplo), n, lda, ldb);
+  *lwork = (int)size;
+  return HIPSOLVER_STATUS_SUCCESS;
+  HIPSOLVER_CATCH("Ssytrd_scratchpad")
+}
+hipsolverStatus_t hipsolverDsygvd_bufferSize(hipsolverHandle_t   handle,
+                                            hipsolverEigType_t  itype,
+                                            hipsolverEigMode_t  jobz,
+                                            hipsolverFillMode_t uplo,
+                                            int                 n,
+                                            float*              A,
+                                            int                 lda,
+                                            float*              B,
+                                            int                 ldb,
+                                            float*              W,
+                                            int*                lwork){
+  HIPSOLVER_TRY
+  if (A == nullptr || B == nullptr || W == nullptr || lwork == nullptr) {
+      return HIPSOLVER_STATUS_INVALID_VALUE;
+  }
+  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
+
+  auto size = H4I::MKLShim::Dsygvd_ScPadSz(ctxt, convert(itype), convert(jobz), convert(uplo), n, lda, ldb);
+  *lwork = (int)size;
+  return HIPSOLVER_STATUS_SUCCESS;
+  HIPSOLVER_CATCH("Dsytrd_scratchpad")
+}
+hipsolverStatus_t hipsolverChegvd_bufferSize(hipsolverHandle_t   handle,
+                                            hipsolverEigType_t  itype,
+                                            hipsolverEigMode_t  jobz,
+                                            hipsolverFillMode_t uplo,
+                                            int                 n,
+                                            hipFloatComplex*    A,
+                                            int                 lda,
+                                            hipFloatComplex*    B,
+                                            int                 ldb,
+                                            float*              W,
+                                            int*                lwork){
+  HIPSOLVER_TRY
+  if (A == nullptr || B == nullptr || W == nullptr || lwork == nullptr) {
+      return HIPSOLVER_STATUS_INVALID_VALUE;
+  }
+  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
+
+  auto size = H4I::MKLShim::Chegvd_ScPadSz(ctxt, convert(itype), convert(jobz), convert(uplo), n, lda, ldb);
+  *lwork = (int)size;
+  return HIPSOLVER_STATUS_SUCCESS;
+  HIPSOLVER_CATCH("Chetrd_scratchpad")
+}
+hipsolverStatus_t hipsolverZhegvd_bufferSize(hipsolverHandle_t   handle,
+                                            hipsolverEigType_t  itype,
+                                            hipsolverEigMode_t  jobz,
+                                            hipsolverFillMode_t uplo,
+                                            int                 n,
+                                            hipDoubleComplex*   A,
+                                            int                 lda,
+                                            hipDoubleComplex*   B,
+                                            int                 ldb,
+                                            double*             W,
+                                            int*                lwork){
+  HIPSOLVER_TRY
+  if (A == nullptr || B == nullptr || W == nullptr || lwork == nullptr) {
+      return HIPSOLVER_STATUS_INVALID_VALUE;
+  }
+  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
+
+  auto size = H4I::MKLShim::Zhegvd_ScPadSz(ctxt, convert(itype), convert(jobz), convert(uplo), n, lda, ldb);
+  *lwork = (int)size;
+  return HIPSOLVER_STATUS_SUCCESS;
+  HIPSOLVER_CATCH("Zhetrd_scratchpad")
+}
+hipsolverStatus_t hipsolverSsygvd(hipsolverHandle_t   handle,
+                                  hipsolverEigType_t  itype,
+                                  hipsolverEigMode_t  jobz,
+                                  hipsolverFillMode_t uplo,
+                                  int                 n,
+                                  float*              A,
+                                  int                 lda,
+                                  float*              B,
+                                  int                 ldb,
+                                  float*              W,
+                                  float*              work,
+                                  int                 lwork,
+                                  int*                devInfo){
+  HIPSOLVER_TRY
+  if (A == nullptr || B == nullptr || W == nullptr || work == nullptr) {
+    return HIPSOLVER_STATUS_INVALID_VALUE;
+  }
+  lwork = 0;
+  hipsolverSsygvd_bufferSize(handle, itype, jobz, uplo, n, A, lda, B, ldb, W, &lwork);
+  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
+  H4I::MKLShim::Ssygvd(ctxt, convert(itype), convert(jobz), convert(uplo), n, A, lda, B, ldb, W, work, lwork);
+  return HIPSOLVER_STATUS_SUCCESS;
+  HIPSOLVER_CATCH("Ssygvd")
+}
+hipsolverStatus_t hipsolverDsygvd(hipsolverHandle_t   handle,
+                                  hipsolverEigType_t  itype,
+                                  hipsolverEigMode_t  jobz,
+                                  hipsolverFillMode_t uplo,
+                                  int                 n,
+                                  double*              A,
+                                  int                 lda,
+                                  double*              B,
+                                  int                 ldb,
+                                  double*              W,
+                                  double*              work,
+                                  int                 lwork,
+                                  int*                devInfo){
+  HIPSOLVER_TRY
+  if (A == nullptr || B == nullptr || W == nullptr || work == nullptr) {
+    return HIPSOLVER_STATUS_INVALID_VALUE;
+  }
+  lwork = 0;
+  hipsolverDsygvd_bufferSize(handle, itype, jobz, uplo, n, A, lda, B, ldb, W, &lwork);
+  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
+  H4I::MKLShim::Dsygvd(ctxt, convert(itype), convert(jobz), convert(uplo), n, A, lda, B, ldb, W, work, lwork);
+  return HIPSOLVER_STATUS_SUCCESS;
+  HIPSOLVER_CATCH("Dsygvd")
+}
+hipsolverStatus_t hipsolverChegvd(hipsolverHandle_t   handle,
+                                  hipsolverEigType_t  itype,
+                                  hipsolverEigMode_t  jobz,
+                                  hipsolverFillMode_t uplo,
+                                  int                 n,
+                                  hipFloatComplex*    A,
+                                  int                 lda,
+                                  hipFloatComplex*    B,
+                                  int                 ldb,
+                                  float*              W,
+                                  hipFloatComplex*    work,
+                                  int                 lwork,
+                                  int*                devInfo){
+  HIPSOLVER_TRY
+  if (A == nullptr || B == nullptr || W == nullptr || work == nullptr) {
+    return HIPSOLVER_STATUS_INVALID_VALUE;
+  }
+  lwork = 0;
+  hipsolverChegvd_bufferSize(handle, itype, jobz, uplo, n, A, lda, B, ldb, W, &lwork);
+  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
+  H4I::MKLShim::Chegvd(ctxt, convert(itype), convert(jobz), convert(uplo), n, (float _Complex*)A, lda,
+                      (float _Complex*)B, ldb, W, (float _Complex*)work, lwork);
+  return HIPSOLVER_STATUS_SUCCESS;
+  HIPSOLVER_CATCH("Chegvd")
+}
+hipsolverStatus_t hipsolverZhegvd(hipsolverHandle_t   handle,
+                                  hipsolverEigType_t  itype,
+                                  hipsolverEigMode_t  jobz,
+                                  hipsolverFillMode_t uplo,
+                                  int                 n,
+                                  hipDoubleComplex*   A,
+                                  int                 lda,
+                                  hipDoubleComplex*   B,
+                                  int                 ldb,
+                                  double*             W,
+                                  hipDoubleComplex*   work,
+                                  int                 lwork,
+                                  int*                devInfo){
+  HIPSOLVER_TRY
+  if (A == nullptr || B == nullptr || W == nullptr || work == nullptr) {
+    return HIPSOLVER_STATUS_INVALID_VALUE;
+  }
+  lwork = 0;
+  hipsolverZhegvd_bufferSize(handle, itype, jobz, uplo, n, A, lda, B, ldb, W, &lwork);
+  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
+  H4I::MKLShim::Zhegvd(ctxt, convert(itype), convert(jobz), convert(uplo), n, (double _Complex*)A, lda,
+                      (double _Complex*)B, ldb, W, (double _Complex*)work, lwork);
+  return HIPSOLVER_STATUS_SUCCESS;
+  HIPSOLVER_CATCH("Zhegvd")
 }
