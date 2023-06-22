@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.20)
 include (${CMAKE_SOURCE_DIR}/CMake/HipSOLVERVersion.cmake)
 project(HipSOLVER
     VERSION ${HipSOLVER_VERSION}

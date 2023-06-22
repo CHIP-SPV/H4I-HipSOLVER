@@ -18,14 +18,14 @@ configure_file(
     ${CMAKE_BINARY_DIR}/include/internal/hipsolver-version.h
     @ONLY)
 
-add_library(HipSOLVER SHARED
+add_library(hipsolver SHARED
     util.cpp
     hipsolver.cpp)
-target_include_directories(HipSOLVER
+target_include_directories(hipsolver
   PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include;${CMAKE_BINARY_DIR}/include>"
     $<INSTALL_INTERFACE:include>)
-target_link_libraries(HipSOLVER
+target_link_libraries(hipsolver
 	PRIVATE
     H4I::MKLShim
   PUBLIC
@@ -33,8 +33,8 @@ target_link_libraries(HipSOLVER
   )
 
 include (GNUInstallDirs)
-install(TARGETS HipSOLVER
-    EXPORT HipSOLVER
+install(TARGETS hipsolver
+    EXPORT hipsolver
 )
 install(FILES
     ${CMAKE_BINARY_DIR}/include/hipsolver.h
