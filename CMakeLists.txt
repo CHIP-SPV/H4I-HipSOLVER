@@ -5,7 +5,7 @@ project(HipSOLVER
     LANGUAGES CXX)
 
 
-find_package(HIP REQUIRED)
+find_package(hip REQUIRED)
 
 include(GNUInstallDirs)
 file(RELATIVE_PATH relRPath

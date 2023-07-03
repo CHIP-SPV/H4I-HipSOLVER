@@ -51,20 +51,20 @@ install(FILES
 )
 
 
-install(EXPORT HipSOLVER
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/HipSOLVER
+install(EXPORT hipsolver
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/hipsolver
   NAMESPACE H4I::
 )
 
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(${CMAKE_SOURCE_DIR}/CMake/HipSOLVERConfig.cmake.in
-	${CMAKE_CURRENT_BINARY_DIR}/HipSOLVERConfig.cmake
+	${CMAKE_CURRENT_BINARY_DIR}/hipsolverConfig.cmake
 	PATH_VARS CMAKE_INSTALL_INCLUDEDIR
-	INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/HipSOLVER
+	INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/hipsolver
 )
 
 install(FILES
-	${CMAKE_CURRENT_BINARY_DIR}/HipSOLVERConfig.cmake
-	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/HipSOLVER
+	${CMAKE_CURRENT_BINARY_DIR}/hipsolverConfig.cmake
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/hipsolver
 )
