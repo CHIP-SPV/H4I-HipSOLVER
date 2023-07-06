@@ -2376,11 +2376,11 @@ hipsolverStatus_t hipsolverDsygvd_bufferSize(hipsolverHandle_t   handle,
                                             hipsolverEigMode_t  jobz,
                                             hipsolverFillMode_t uplo,
                                             int                 n,
-                                            float*              A,
+                                            double*             A,
                                             int                 lda,
-                                            float*              B,
+                                            double*             B,
                                             int                 ldb,
-                                            float*              W,
+                                            double*             W,
                                             int*                lwork){
   HIPSOLVER_TRY
   if (A == nullptr || B == nullptr || W == nullptr || lwork == nullptr) {
