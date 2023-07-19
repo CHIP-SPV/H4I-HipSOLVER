@@ -31,6 +31,10 @@ target_link_libraries(hipsolver
   PUBLIC
     hip::host
   )
+# We need to be sure the ROCm HipSOLVER library is downloaded and "installed"
+# (i.e., the hipsolver.h header has been copied to the location we want) before
+# we build this library.
+add_dependencies(hipsolver ROCmHipsolver)
 
 include (GNUInstallDirs)
 install(TARGETS hipsolver
@@ -68,3 +72,4 @@ install(FILES
 	${CMAKE_CURRENT_BINARY_DIR}/hipsolverConfig.cmake
 	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/hipsolver
 )
+
