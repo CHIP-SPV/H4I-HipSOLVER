@@ -193,7 +193,7 @@ hipsolverStatus_t hipsolverSgebrd(hipsolverHandle_t handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
-  // MKL does not use 'devInfo' hence resetting it.
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
 
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
@@ -231,7 +231,7 @@ hipsolverStatus_t hipsolverDgebrd(hipsolverHandle_t handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
-  // MKL does not use 'devInfo' hence resetting it.
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
 
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
@@ -270,7 +270,7 @@ hipsolverStatus_t hipsolverCgebrd(hipsolverHandle_t handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
-  // MKL does not use 'devInfo' hence resetting it.
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
 
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
@@ -309,7 +309,7 @@ hipsolverStatus_t hipsolverZgebrd(hipsolverHandle_t handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
-  // MKL does not use 'devInfo' hence resetting it.
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
 
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
@@ -444,6 +444,7 @@ hipsolverStatus_t hipsolverSsyevd(hipsolverHandle_t   handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo,0,sizeof(int)));
 
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
@@ -484,6 +485,7 @@ hipsolverStatus_t hipsolverDsyevd(hipsolverHandle_t   handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo,0,sizeof(int)));
 
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
@@ -523,6 +525,7 @@ hipsolverStatus_t hipsolverCheevd(hipsolverHandle_t   handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo,0,sizeof(int)));
 
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
@@ -562,6 +565,7 @@ hipsolverStatus_t hipsolverZheevd(hipsolverHandle_t   handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo,0,sizeof(int)));
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Zheevd(ctxt, convert(jobz), convert(uplo), n, (double _Complex*)A, lda, D, (double _Complex*)work, lwork);
@@ -660,161 +664,6 @@ hipsolverStatus_t hipsolverZungtr_bufferSize(hipsolverHandle_t   handle,
   HIPSOLVER_CATCH("Zungtr_scratchpad")
 }
 
-hipsolverStatus_t hipsolverSorgtr(hipsolverHandle_t   handle,
-                                hipsolverFillMode_t uplo,
-                                int                 n,
-                                float*              A,
-                                int                 lda,
-                                float*              tau,
-                                float*              work,
-                                int                 lwork,
-                                int*                devInfo){
-  HIPSOLVER_TRY
-  if(!handle)
-      return HIPSOLVER_STATUS_NOT_INITIALIZED;
-  if (!isValid(uplo))
-      return HIPSOLVER_STATUS_INVALID_ENUM;
-  if (A == nullptr || tau == nullptr ) {
-      return HIPSOLVER_STATUS_INVALID_VALUE;
-  }
-  bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    lwork = 0;
-    auto status = hipsolverSorgtr_bufferSize(handle, uplo, n, A, lda, tau, &lwork);
-    if (status != HIPSOLVER_STATUS_SUCCESS){
-      return status;
-    }
-    HIP_CHECK(hipMalloc(&work, lwork));
-    allocate = true;
-  }
-
-  HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
-
-  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  H4I::MKLShim::Sorgtr(ctxt, convert(uplo), n, A, lda, tau, work, lwork);
-  if (allocate)
-    HIP_CHECK(hipFree(work));
-  return HIPSOLVER_STATUS_SUCCESS;
-  HIPSOLVER_CATCH("Sorgtr")
-}
-
-hipsolverStatus_t hipsolverDorgtr(hipsolverHandle_t   handle,
-                                hipsolverFillMode_t uplo,
-                                int                 n,
-                                double*             A,
-                                int                 lda,
-                                double*             tau,
-                                double*             work,
-                                int                 lwork,
-                                int*                devInfo){
-  HIPSOLVER_TRY
-  if(!handle)
-      return HIPSOLVER_STATUS_NOT_INITIALIZED;
-  if (!isValid(uplo))
-      return HIPSOLVER_STATUS_INVALID_ENUM;
-  if (A == nullptr || tau == nullptr ) {
-      return HIPSOLVER_STATUS_INVALID_VALUE;
-  }
-  bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    lwork = 0;
-    auto status = hipsolverDorgtr_bufferSize(handle, uplo, n, A, lda, tau, &lwork);
-    if (status != HIPSOLVER_STATUS_SUCCESS){
-      return status;
-    }
-    HIP_CHECK(hipMalloc(&work, lwork));
-    allocate = true;
-  }
-
-  HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
-
-  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  H4I::MKLShim::Dorgtr(ctxt, convert(uplo), n, A, lda, tau, work, lwork);
-
-  if (allocate)
-    HIP_CHECK(hipFree(work));  
-  return HIPSOLVER_STATUS_SUCCESS;
-  HIPSOLVER_CATCH("Dorgtr")
-}
-
-hipsolverStatus_t hipsolverCungtr(hipsolverHandle_t   handle,
-                                hipsolverFillMode_t uplo,
-                                int                 n,
-                                hipFloatComplex*    A,
-                                int                 lda,
-                                hipFloatComplex*    tau,
-                                hipFloatComplex*    work,
-                                int                 lwork,
-                                int*                devInfo){
-  HIPSOLVER_TRY
-  if(!handle)
-      return HIPSOLVER_STATUS_NOT_INITIALIZED;
-  if (!isValid(uplo))
-      return HIPSOLVER_STATUS_INVALID_ENUM;
-  if (A == nullptr || tau == nullptr ) {
-      return HIPSOLVER_STATUS_INVALID_VALUE;
-  }
-  bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    lwork = 0;
-    auto status = hipsolverCungtr_bufferSize(handle, uplo, n, A, lda, tau, &lwork);
-    if (status != HIPSOLVER_STATUS_SUCCESS){
-      return status;
-    }
-    HIP_CHECK(hipMalloc(&work, lwork));
-    allocate = true;
-  }
-
-  HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
-
-  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  H4I::MKLShim::Cungtr(ctxt, convert(uplo), n, (float _Complex*)A, lda,
-                (float _Complex*)tau, (float _Complex*)work, lwork);
-  if (allocate)
-    HIP_CHECK(hipFree(work));
-  return HIPSOLVER_STATUS_SUCCESS;
-  HIPSOLVER_CATCH("Cungtr")
-}
-
-hipsolverStatus_t hipsolverZungtr(hipsolverHandle_t   handle,
-                                hipsolverFillMode_t uplo,
-                                int                 n,
-                                hipDoubleComplex*   A,
-                                int                 lda,
-                                hipDoubleComplex*   tau,
-                                hipDoubleComplex*   work,
-                                int                 lwork,
-                                int*                devInfo){
-  HIPSOLVER_TRY
-  if(!handle)
-      return HIPSOLVER_STATUS_NOT_INITIALIZED;
-  if (!isValid(uplo))
-      return HIPSOLVER_STATUS_INVALID_ENUM;
-  if (A == nullptr || tau == nullptr ) {
-      return HIPSOLVER_STATUS_INVALID_VALUE;
-  }
-  bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    lwork = 0;
-    auto status = hipsolverZungtr_bufferSize(handle, uplo, n, A, lda, tau, &lwork);
-    if (status != HIPSOLVER_STATUS_SUCCESS){
-      return status;
-    }
-    HIP_CHECK(hipMalloc(&work, lwork));
-    allocate = true;
-  }
-
-  HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
-
-  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  H4I::MKLShim::Zungtr(ctxt, convert(uplo), n, (double _Complex*)A, lda,
-                (double _Complex*)tau, (double _Complex*)work, lwork);
-  if (allocate)
-    HIP_CHECK(hipFree(work));
-  return HIPSOLVER_STATUS_SUCCESS;
-  HIPSOLVER_CATCH("Zungtr")
-}
-
 // orgbr/ungbr
 hipsolverStatus_t hipsolverSorgbr_bufferSize(hipsolverHandle_t   handle,
                                              hipsolverSideMode_t side,
@@ -908,160 +757,6 @@ hipsolverStatus_t hipsolverZungbr_bufferSize(hipsolverHandle_t   handle,
   return HIPSOLVER_STATUS_SUCCESS;
   HIPSOLVER_CATCH("Zungbr_scratchpad")
 }
-hipsolverStatus_t hipsolverSorgbr(hipsolverHandle_t   handle,
-                                  hipsolverSideMode_t side,
-                                  int                 m,
-                                  int                 n,
-                                  int                 k,
-                                  float*              A,
-                                  int                 lda,
-                                  float*              tau,
-                                  float*              work,
-                                  int                 lwork,
-                                  int*                devInfo){
-  HIPSOLVER_TRY
-  if(!handle)
-    return HIPSOLVER_STATUS_NOT_INITIALIZED;
-  if (!isValid(side))
-    return HIPSOLVER_STATUS_INVALID_ENUM; 
-  if (A == nullptr || tau == nullptr ) {
-    return HIPSOLVER_STATUS_INVALID_VALUE;
-  }
-  bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    lwork = 0;
-    auto status = hipsolverSorgbr_bufferSize(handle, side, m, n, k, A, lda, tau, &lwork);
-    if (status != HIPSOLVER_STATUS_SUCCESS){
-      return status;
-    }
-    HIP_CHECK(hipMalloc(&work, lwork));
-    allocate = true;
-  }
-  HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
-
-  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  H4I::MKLShim::Sorgbr(ctxt, convertToGen(side), m, n, k, A, lda, tau, work, lwork);
-  if (allocate)
-    HIP_CHECK(hipFree(work));
-  return HIPSOLVER_STATUS_SUCCESS;
-  HIPSOLVER_CATCH("Sorgbr")
-}
-hipsolverStatus_t hipsolverDorgbr(hipsolverHandle_t   handle,
-                                  hipsolverSideMode_t side,
-                                  int                 m,
-                                  int                 n,
-                                  int                 k,
-                                  double*             A,
-                                  int                 lda,
-                                  double*             tau,
-                                  double*             work,
-                                  int                 lwork,
-                                  int*                devInfo){
-  HIPSOLVER_TRY
-  if(!handle)
-    return HIPSOLVER_STATUS_NOT_INITIALIZED;
-  if (!isValid(side))
-    return HIPSOLVER_STATUS_INVALID_ENUM; 
-  if (A == nullptr || tau == nullptr ) {
-    return HIPSOLVER_STATUS_INVALID_VALUE;
-  }
-  bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    lwork = 0;
-    auto status = hipsolverDorgbr_bufferSize(handle, side, m, n, k, A, lda, tau, &lwork);
-    if (status != HIPSOLVER_STATUS_SUCCESS){
-      return status;
-    }
-    HIP_CHECK(hipMalloc(&work, lwork));
-    allocate = true;
-  }
-  HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
-
-  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  H4I::MKLShim::Dorgbr(ctxt, convertToGen(side), m, n, k, A, lda, tau, work, lwork);
-  if (allocate)
-    HIP_CHECK(hipFree(work));
-  return HIPSOLVER_STATUS_SUCCESS;
-  HIPSOLVER_CATCH("Dorgbr")
-}
-hipsolverStatus_t hipsolverCungbr(hipsolverHandle_t   handle,
-                                  hipsolverSideMode_t side,
-                                  int                 m,
-                                  int                 n,
-                                  int                 k,
-                                  hipFloatComplex*    A,
-                                  int                 lda,
-                                  hipFloatComplex*    tau,
-                                  hipFloatComplex*    work,
-                                  int                 lwork,
-                                  int*                devInfo){
-  HIPSOLVER_TRY
-  if(!handle)
-    return HIPSOLVER_STATUS_NOT_INITIALIZED;
-  if (!isValid(side))
-    return HIPSOLVER_STATUS_INVALID_ENUM; 
-  if (A == nullptr || tau == nullptr ) {
-    return HIPSOLVER_STATUS_INVALID_VALUE;
-  }
-  bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    lwork = 0;
-    auto status = hipsolverCungbr_bufferSize(handle, side, m, n, k, A, lda, tau, &lwork);
-    if (status != HIPSOLVER_STATUS_SUCCESS){
-      return status;
-    }
-    HIP_CHECK(hipMalloc(&work, lwork));
-    allocate = true;
-  }
-  HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
-
-  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  H4I::MKLShim::Cungbr(ctxt, convertToGen(side), m, n, k, (float _Complex*)A, lda,
-                      (float _Complex*)tau, (float _Complex*)work, lwork);
-  if (allocate)
-    HIP_CHECK(hipFree(work));
-  return HIPSOLVER_STATUS_SUCCESS;
-  HIPSOLVER_CATCH("Cungbr")
-}
-hipsolverStatus_t hipsolverZungbr(hipsolverHandle_t   handle,
-                                  hipsolverSideMode_t side,
-                                  int                 m,
-                                  int                 n,
-                                  int                 k,
-                                  hipDoubleComplex*   A,
-                                  int                 lda,
-                                  hipDoubleComplex*   tau,
-                                  hipDoubleComplex*   work,
-                                  int                 lwork,
-                                  int*                devInfo){
-  HIPSOLVER_TRY
-  if(!handle)
-    return HIPSOLVER_STATUS_NOT_INITIALIZED;
-  if (!isValid(side))
-    return HIPSOLVER_STATUS_INVALID_ENUM; 
-  if (A == nullptr || tau == nullptr ) {
-    return HIPSOLVER_STATUS_INVALID_VALUE;
-  }
-  bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    lwork = 0;
-    auto status = hipsolverZungbr_bufferSize(handle, side, m, n, k, A, lda, tau, &lwork);
-    if (status != HIPSOLVER_STATUS_SUCCESS){
-      return status;
-    }
-    HIP_CHECK(hipMalloc(&work, lwork));
-    allocate = true;
-  }
-  HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
-
-  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  H4I::MKLShim::Zungbr(ctxt, convertToGen(side), m, n, k, (double _Complex*)A, lda,
-                      (double _Complex*)tau, (double _Complex*)work, lwork);
-  if (allocate)
-    HIP_CHECK(hipFree(work));
-  return HIPSOLVER_STATUS_SUCCESS;
-  HIPSOLVER_CATCH("Zungbr")
-}
 
 // orgqr/ungqr
 hipsolverStatus_t hipsolverSorgqr_bufferSize(
@@ -1149,17 +844,16 @@ hipsolverStatus_t hipsolverSorgqr(hipsolverHandle_t handle,
     return HIPSOLVER_STATUS_INVALID_VALUE;
   }
   bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    if (work == nullptr || lwork == 0) {
-      lwork = 0;
-      auto status = hipsolverSorgqr_bufferSize(handle, m, n, k, A, lda, tau, &lwork);
-      if (status != HIPSOLVER_STATUS_SUCCESS)
-        return status;
-      HIP_CHECK(hipMalloc(&work, lwork));
-      allocate = true;
-    }
+  if (work == nullptr || lwork == 0) {
+    lwork = 0;
+    auto status = hipsolverSorgqr_bufferSize(handle, m, n, k, A, lda, tau, &lwork);
+    if (status != HIPSOLVER_STATUS_SUCCESS)
+      return status;
+    HIP_CHECK(hipMalloc(&work, lwork));
+    allocate = true;
   }
 
+  // WA: MKL does not use devInfo hence resetting it to zero.
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
 
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
@@ -1186,18 +880,18 @@ hipsolverStatus_t hipsolverDorgqr(hipsolverHandle_t handle,
     return HIPSOLVER_STATUS_INVALID_VALUE;
   }
   bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    if (work == nullptr || lwork == 0) {
-      lwork = 0;
-      auto status = hipsolverDorgqr_bufferSize(handle, m, n, k, A, lda, tau, &lwork);
-      if (status != HIPSOLVER_STATUS_SUCCESS)
-        return status;
-      HIP_CHECK(hipMalloc(&work, lwork));
-      allocate = true;
-    }
+  if (work == nullptr || lwork == 0) {
+    lwork = 0;
+    auto status = hipsolverDorgqr_bufferSize(handle, m, n, k, A, lda, tau, &lwork);
+    if (status != HIPSOLVER_STATUS_SUCCESS)
+      return status;
+    HIP_CHECK(hipMalloc(&work, lwork));
+    allocate = true;
   }
 
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Dorgqr(ctxt, m, n, k, A, lda, tau, work, lwork);
   if (allocate)
@@ -1222,16 +916,16 @@ hipsolverStatus_t hipsolverCungqr(hipsolverHandle_t handle,
     return HIPSOLVER_STATUS_INVALID_VALUE;
   }
   bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    if (work == nullptr || lwork == 0) {
-      lwork = 0;
-      auto status = hipsolverCungqr_bufferSize(handle, m, n, k, A, lda, tau, &lwork);
-      if (status != HIPSOLVER_STATUS_SUCCESS)
-        return status;
-      HIP_CHECK(hipMalloc(&work, lwork));
-      allocate = true;
-    }
+  if (work == nullptr || lwork == 0) {
+    lwork = 0;
+    auto status = hipsolverCungqr_bufferSize(handle, m, n, k, A, lda, tau, &lwork);
+    if (status != HIPSOLVER_STATUS_SUCCESS)
+      return status;
+    HIP_CHECK(hipMalloc(&work, lwork));
+    allocate = true;
   }
+
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
 
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
@@ -1258,16 +952,16 @@ hipsolverStatus_t hipsolverZungqr(hipsolverHandle_t handle,
     return HIPSOLVER_STATUS_INVALID_VALUE;
   }
   bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    if (work == nullptr || lwork == 0) {
-      lwork = 0;
-      auto status = hipsolverZungqr_bufferSize(handle, m, n, k, A, lda, tau, &lwork);
-      if (status != HIPSOLVER_STATUS_SUCCESS)
-        return status;
-      HIP_CHECK(hipMalloc(&work, lwork));
-      allocate = true;
-    }
+  if (work == nullptr || lwork == 0) {
+    lwork = 0;
+    auto status = hipsolverZungqr_bufferSize(handle, m, n, k, A, lda, tau, &lwork);
+    if (status != HIPSOLVER_STATUS_SUCCESS)
+      return status;
+    HIP_CHECK(hipMalloc(&work, lwork));
+    allocate = true;
   }
+
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
 
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
@@ -1415,7 +1109,10 @@ hipsolverStatus_t hipsolverSormqr(hipsolverHandle_t    handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
+
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Sormqr(ctxt, convert(side), convert(trans), m, n, k, A, lda, tau, C, ldc, work, lwork);
   if (allocate)
@@ -1455,7 +1152,9 @@ hipsolverStatus_t hipsolverDormqr(hipsolverHandle_t    handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Dormqr(ctxt, convert(side), convert(trans), m, n, k, A, lda, tau, C, ldc, work, lwork);
   if (allocate)
@@ -1495,7 +1194,9 @@ hipsolverStatus_t hipsolverCunmqr(hipsolverHandle_t    handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Cunmqr(ctxt, convert(side), convert(trans), m, n, k, (float _Complex*)A, lda, (float _Complex*)tau,
                        (float _Complex*)C, ldc, (float _Complex*)work, lwork);
@@ -1536,7 +1237,9 @@ hipsolverStatus_t hipsolverZunmqr(hipsolverHandle_t    handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Zunmqr(ctxt, convert(side), convert(trans), m, n, k, (double _Complex*)A, lda, (double _Complex*)tau,
                        (double _Complex*)C, ldc, (double _Complex*)work, lwork);
@@ -1651,168 +1354,6 @@ hipsolverStatus_t hipsolverZunmtr_bufferSize(hipsolverHandle_t    handle,
   return HIPSOLVER_STATUS_SUCCESS;
   HIPSOLVER_CATCH("Zunmtr_scratchpad")
 }
-hipsolverStatus_t hipsolverSormtr(hipsolverHandle_t    handle,
-                                  hipsolverSideMode_t  side,
-                                  hipsolverFillMode_t  uplo,
-                                  hipsolverOperation_t trans,
-                                  int                  m,
-                                  int                  n,
-                                  float*               A,
-                                  int                  lda,
-                                  float*               tau,
-                                  float*               C,
-                                  int                  ldc,
-                                  float*               work,
-                                  int                  lwork,
-                                  int*                 devInfo){
-  HIPSOLVER_TRY
-  if(!handle)
-    return HIPSOLVER_STATUS_NOT_INITIALIZED;
-  if (!isValid(side) || !isValid(trans) || !isValid(uplo))
-    return HIPSOLVER_STATUS_INVALID_ENUM;
-  if (A == nullptr || tau == nullptr  || C == nullptr || devInfo == nullptr) {
-    return HIPSOLVER_STATUS_INVALID_VALUE;
-  }
-  bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    lwork = 0;
-    auto status = hipsolverSormtr_bufferSize(handle, side, uplo, trans, m, n, A, lda, tau, C, ldc, &lwork);
-    if (status != HIPSOLVER_STATUS_SUCCESS){
-      return status;
-    }
-    HIP_CHECK(hipMalloc(&work, lwork));
-    allocate = true;
-  }
-  HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
-  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  H4I::MKLShim::Sormtr(ctxt, convert(side), convert(uplo), convert(trans), m, n, A, lda, tau, C, ldc, work, lwork);
-  if (allocate)
-    HIP_CHECK(hipFree(work));
-  return HIPSOLVER_STATUS_SUCCESS;
-  HIPSOLVER_CATCH("Sormtr")
-}
-hipsolverStatus_t hipsolverDormtr(hipsolverHandle_t    handle,
-                                  hipsolverSideMode_t  side,
-                                  hipsolverFillMode_t  uplo,
-                                  hipsolverOperation_t trans,
-                                  int                  m,
-                                  int                  n,
-                                  double*              A,
-                                  int                  lda,
-                                  double*              tau,
-                                  double*              C,
-                                  int                  ldc,
-                                  double*              work,
-                                  int                  lwork,
-                                  int*                 devInfo){
-  HIPSOLVER_TRY
-  if(!handle)
-    return HIPSOLVER_STATUS_NOT_INITIALIZED;
-  if (!isValid(side) || !isValid(trans) || !isValid(uplo))
-    return HIPSOLVER_STATUS_INVALID_ENUM;
-  if (A == nullptr || tau == nullptr  || C == nullptr || devInfo == nullptr) {
-    return HIPSOLVER_STATUS_INVALID_VALUE;
-  }
-  bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    lwork = 0;
-    auto status = hipsolverDormtr_bufferSize(handle, side, uplo, trans, m, n, A, lda, tau, C, ldc, &lwork);
-    if (status != HIPSOLVER_STATUS_SUCCESS){
-      return status;
-    }
-    HIP_CHECK(hipMalloc(&work, lwork));
-    allocate = true;
-  }
-  HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
-  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  H4I::MKLShim::Dormtr(ctxt, convert(side), convert(uplo), convert(trans), m, n, A, lda, tau, C, ldc, work, lwork);
-  if (allocate)
-    HIP_CHECK(hipFree(work));
-  return HIPSOLVER_STATUS_SUCCESS;
-  HIPSOLVER_CATCH("Dormtr")
-}
-hipsolverStatus_t hipsolverCunmtr(hipsolverHandle_t    handle,
-                                  hipsolverSideMode_t  side,
-                                  hipsolverFillMode_t  uplo,
-                                  hipsolverOperation_t trans,
-                                  int                  m,
-                                  int                  n,
-                                  hipFloatComplex*     A,
-                                  int                  lda,
-                                  hipFloatComplex*     tau,
-                                  hipFloatComplex*     C,
-                                  int                  ldc,
-                                  hipFloatComplex*     work,
-                                  int                  lwork,
-                                  int*                 devInfo){
-  HIPSOLVER_TRY
-  if(!handle)
-    return HIPSOLVER_STATUS_NOT_INITIALIZED;
-  if (!isValid(side) || !isValid(trans) || !isValid(uplo))
-    return HIPSOLVER_STATUS_INVALID_ENUM;
-  if (A == nullptr || tau == nullptr  || C == nullptr || devInfo == nullptr) {
-    return HIPSOLVER_STATUS_INVALID_VALUE;
-  }
-  bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    lwork = 0;
-    auto status = hipsolverCunmtr_bufferSize(handle, side, uplo, trans, m, n, A, lda, tau, C, ldc, &lwork);
-    if (status != HIPSOLVER_STATUS_SUCCESS){
-      return status;
-    }
-    HIP_CHECK(hipMalloc(&work, lwork));
-    allocate = true;
-  }
-  HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
-  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  H4I::MKLShim::Cunmtr(ctxt, convert(side), convert(uplo), convert(trans), m, n, (float _Complex*)A, lda, (float _Complex*)tau,
-                       (float _Complex*)C, ldc, (float _Complex*)work, lwork);
-  if (allocate)
-    HIP_CHECK(hipFree(work));
-  return HIPSOLVER_STATUS_SUCCESS;
-  HIPSOLVER_CATCH("Cunmtr")
-}
-hipsolverStatus_t hipsolverZunmtr(hipsolverHandle_t    handle,
-                                  hipsolverSideMode_t  side,
-                                  hipsolverFillMode_t  uplo,
-                                  hipsolverOperation_t trans,
-                                  int                  m,
-                                  int                  n,
-                                  hipDoubleComplex*    A,
-                                  int                  lda,
-                                  hipDoubleComplex*    tau,
-                                  hipDoubleComplex*    C,
-                                  int                  ldc,
-                                  hipDoubleComplex*    work,
-                                  int                  lwork,
-                                  int*                 devInfo){
-  HIPSOLVER_TRY
-  if(!handle)
-    return HIPSOLVER_STATUS_NOT_INITIALIZED;
-  if (!isValid(side) || !isValid(trans) || !isValid(uplo))
-    return HIPSOLVER_STATUS_INVALID_ENUM;
-  if (A == nullptr || tau == nullptr  || C == nullptr || devInfo == nullptr) {
-    return HIPSOLVER_STATUS_INVALID_VALUE;
-  }
-  bool allocate = false;
-  if (work == nullptr || lwork == 0){
-    lwork = 0;
-    auto status = hipsolverZunmtr_bufferSize(handle, side, uplo, trans, m, n, A, lda, tau, C, ldc, &lwork);
-    if (status != HIPSOLVER_STATUS_SUCCESS){
-      return status;
-    }
-    HIP_CHECK(hipMalloc(&work, lwork));
-    allocate = true;
-  }
-  HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
-  auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  H4I::MKLShim::Zunmtr(ctxt, convert(side), convert(uplo), convert(trans), m, n, (double _Complex*)A, lda, (double _Complex*)tau,
-                       (double _Complex*)C, ldc, (double _Complex*)work, lwork);
-  if (allocate)
-    HIP_CHECK(hipFree(work));
-  return HIPSOLVER_STATUS_SUCCESS;
-  HIPSOLVER_CATCH("Zunmtr")
-}
 
 // geqrf
 hipsolverStatus_t hipsolverSgeqrf_bufferSize(
@@ -1895,6 +1436,7 @@ hipsolverStatus_t hipsolverSgeqrf(hipsolverHandle_t handle,
       HIP_CHECK(hipMalloc(&work, lwork));
       allocate = true;
   }
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
 
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
@@ -1928,6 +1470,7 @@ hipsolverStatus_t hipsolverDgeqrf(hipsolverHandle_t handle,
       HIP_CHECK(hipMalloc(&work, lwork));
       allocate = true;
   }
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Dgeqrf(ctxt, m, n, A, lda, tau, work, lwork);
@@ -1960,6 +1503,7 @@ hipsolverStatus_t hipsolverCgeqrf(hipsolverHandle_t handle,
       HIP_CHECK(hipMalloc(&work, lwork));
       allocate = true;
   }
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Cgeqrf(ctxt, m, n, (float _Complex*)A, lda, (float _Complex*)tau, (float _Complex*)work, lwork);
@@ -1992,6 +1536,7 @@ hipsolverStatus_t hipsolverZgeqrf(hipsolverHandle_t handle,
       HIP_CHECK(hipMalloc(&work, lwork));
       allocate = true;
   }
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Zgeqrf(ctxt, m, n, (double _Complex*)A, lda, (double _Complex*)tau, (double _Complex*)work, lwork);
@@ -2080,10 +1625,32 @@ hipsolverStatus_t hipsolverSgetrf(hipsolverHandle_t handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
+  // WA: data type of devIpiv is different in MKL vs HIP and CUDA solver library
+  //     hence need special handling here. Force type cast was causing crash as
+  //     MKL's requirement is more.
+  //     Note: It can have performance impact as there are extra copies and element wise copies are involved
+  int64_t* local_dIpiv;
+  auto no_of_elements = max(1, min(m,n));
+  // Allocating it on host with device access to avoid extra copy needed while accessing it from host
+  HIP_CHECK(hipHostMalloc(&local_dIpiv, sizeof(int64_t)* no_of_elements));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
-  H4I::MKLShim::Sgetrf(ctxt, m, n, A, lda, (int64_t*)devIpiv, work, lwork);
+  H4I::MKLShim::Sgetrf(ctxt, m, n, A, lda, local_dIpiv, work, lwork);
+
+  int* local_hIpiv = (int*)malloc(sizeof(int)* no_of_elements);
+  for(auto i=0; i< no_of_elements; ++i){
+      local_hIpiv[i] = (int)local_dIpiv[i];
+  }
+  // copy back the data to out param devIpiv
+  HIP_CHECK(hipMemcpy(devIpiv, local_hIpiv, sizeof(int)* no_of_elements, hipMemcpyHostToDevice));
+
+  // release the memory allocated in the WA
+  HIP_CHECK(hipFree(local_dIpiv));
+  free(local_hIpiv);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -2111,10 +1678,32 @@ hipsolverStatus_t hipsolverDgetrf(hipsolverHandle_t handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
+  // WA: data type of devIpiv is different in MKL vs HIP and CUDA solver library
+  //     hence need special handling here. Force type cast was causing crash as
+  //     MKL's requirement is more.
+  //     Note: It can have performance impact as there are extra copies and element wise copies are involved
+  int64_t* local_dIpiv;
+  auto no_of_elements = max(1, min(m,n));
+  // Allocating it on host with device access to avoid extra copy needed while accessing it from host
+  HIP_CHECK(hipHostMalloc(&local_dIpiv, sizeof(int64_t)* no_of_elements));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
-  H4I::MKLShim::Dgetrf(ctxt, m, n, A, lda, (int64_t*)devIpiv, work, lwork);
+  H4I::MKLShim::Dgetrf(ctxt, m, n, A, lda, local_dIpiv, work, lwork);
+
+  int* local_hIpiv = (int*)malloc(sizeof(int)* no_of_elements);
+  for(auto i=0; i< no_of_elements; ++i){
+      local_hIpiv[i] = (int)local_dIpiv[i];
+  }
+  // copy back the data to out param devIpiv
+  HIP_CHECK(hipMemcpy(devIpiv, local_hIpiv, sizeof(int)*no_of_elements, hipMemcpyHostToDevice));
+
+  // release the memory allocated in the WA
+  HIP_CHECK(hipFree(local_dIpiv));
+  free(local_hIpiv);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -2142,10 +1731,33 @@ hipsolverStatus_t hipsolverCgetrf(hipsolverHandle_t handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
+
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
+  // WA: data type of devIpiv is different in MKL vs HIP and CUDA solver library
+  //     hence need special handling here. Force type cast was causing crash as
+  //     MKL's requirement is more.
+  //     Note: It can have performance impact as there are extra copies and element wise copies are involved
+  int64_t* local_dIpiv;
+  auto no_of_elements = max(1, min(m,n));
+  // Allocating it on host with device access to avoid extra copy needed while accessing it from host
+  HIP_CHECK(hipHostMalloc(&local_dIpiv, sizeof(int64_t)* no_of_elements));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
-  H4I::MKLShim::Cgetrf(ctxt, m, n, (float _Complex*)A, lda, (int64_t*)devIpiv, (float _Complex*)work, lwork);
+  H4I::MKLShim::Cgetrf(ctxt, m, n, (float _Complex*)A, lda, local_dIpiv, (float _Complex*)work, lwork);
+
+  int* local_hIpiv = (int*)malloc(sizeof(int)* no_of_elements);
+  for(auto i=0; i< no_of_elements; ++i){
+      local_hIpiv[i] = (int)local_dIpiv[i];
+  }
+  // copy back the data to out param devIpiv
+  HIP_CHECK(hipMemcpy(devIpiv, local_hIpiv, sizeof(int)* no_of_elements, hipMemcpyHostToDevice));
+
+  // release the memory allocated in the WA
+  HIP_CHECK(hipFree(local_dIpiv));
+  free(local_hIpiv);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -2173,10 +1785,33 @@ hipsolverStatus_t hipsolverZgetrf(hipsolverHandle_t handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
+
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
+  // WA: data type of devIpiv is different in MKL vs HIP and CUDA solver library
+  //     hence need special handling here. Force type cast was causing crash as
+  //     MKL's requirement is more.
+  //     Note: It can have performance impact as there are extra copies and element wise copies are involved
+  int64_t* local_dIpiv;
+  auto no_of_elements = max(1, min(m,n));
+  // Allocating it on host with device access to avoid extra copy needed while accessing it from host
+  HIP_CHECK(hipHostMalloc(&local_dIpiv, sizeof(int64_t)* no_of_elements));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
-  H4I::MKLShim::Zgetrf(ctxt, m, n, (double _Complex*)A, lda, (int64_t*)devIpiv, (double _Complex*)work, lwork);
+  H4I::MKLShim::Zgetrf(ctxt, m, n, (double _Complex*)A, lda, local_dIpiv, (double _Complex*)work, lwork);
+
+  int* local_hIpiv = (int*)malloc(sizeof(int)* no_of_elements);
+  for(auto i=0; i< no_of_elements; ++i){
+      local_hIpiv[i] = (int)local_dIpiv[i];
+  }
+  // copy back the data to out param devIpiv
+  HIP_CHECK(hipMemcpy(devIpiv, local_hIpiv, sizeof(int)* no_of_elements, hipMemcpyHostToDevice));
+
+  // release the memory allocated in the WA
+  HIP_CHECK(hipFree(local_dIpiv));
+  free(local_hIpiv);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -2310,10 +1945,28 @@ hipsolverStatus_t hipsolverSgetrs(hipsolverHandle_t    handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate =true;
   }
+  // WA: MKL does not use devinfo hence setting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+  // WA: data type of devIpiv is different in MKL vs HIP and CUDA solver library
+  //     hence need special handling here. Force type cast was causing result mismatch
+  //     Note: It can have performance impact as there are extra copies and
+  //           element wise copies are involved between Host <-> device memory
+  auto no_of_elements = max(1, n);
+  int* local_hIpiv = (int*)malloc(no_of_elements*sizeof(int));
+  HIP_CHECK(hipMemcpy(local_hIpiv, devIpiv, sizeof(int)*no_of_elements, hipMemcpyDeviceToHost));
+
+  int64_t* dIpiv;
+  HIP_CHECK(hipHostMalloc(&dIpiv, sizeof(int64_t)*no_of_elements));
+
+  for(auto i=0; i<no_of_elements; ++i) {
+      dIpiv[i] = local_hIpiv[i];
+  }
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
-  H4I::MKLShim::Sgetrs(ctxt, convert(trans), n, nrhs, A, lda, (int64_t*)devIpiv, B, ldb, work, lwork);
+  H4I::MKLShim::Sgetrs(ctxt, convert(trans), n, nrhs, A, lda, dIpiv, B, ldb, work, lwork);
+
+  HIP_CHECK(hipFree(dIpiv));
+  free(local_hIpiv);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -2349,10 +2002,28 @@ hipsolverStatus_t hipsolverDgetrs(hipsolverHandle_t    handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate =true;
   }
+  // WA: MKL does not use devinfo hence setting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+  // WA: data type of devIpiv is different in MKL vs HIP and CUDA solver library
+  //     hence need special handling here. Force type cast was causing result mismatch
+  //     Note: It can have performance impact as there are extra copies and
+  //           element wise copies are involved between Host <-> device memory
+  auto no_of_elements = max(1, n);
+  int* local_hIpiv = (int*)malloc(no_of_elements*sizeof(int));
+  HIP_CHECK(hipMemcpy(local_hIpiv, devIpiv, sizeof(int)*no_of_elements, hipMemcpyDeviceToHost));
+
+  int64_t* dIpiv;
+  HIP_CHECK(hipHostMalloc(&dIpiv, sizeof(int64_t)*no_of_elements));
+
+  for(auto i=0; i<no_of_elements; ++i) {
+      dIpiv[i] = local_hIpiv[i];
+  }
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
-  H4I::MKLShim::Dgetrs(ctxt, convert(trans), n, nrhs, A, lda, (int64_t*)devIpiv, B, ldb, work, lwork);
+  H4I::MKLShim::Dgetrs(ctxt, convert(trans), n, nrhs, A, lda, dIpiv, B, ldb, work, lwork);
+
+  HIP_CHECK(hipFree(dIpiv));
+  free(local_hIpiv);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -2388,11 +2059,29 @@ hipsolverStatus_t hipsolverCgetrs(hipsolverHandle_t    handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate =true;
   }
+  // WA: MKL does not use devinfo hence setting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+  // WA: data type of devIpiv is different in MKL vs HIP and CUDA solver library
+  //     hence need special handling here. Force type cast was causing result mismatch
+  //     Note: It can have performance impact as there are extra copies and
+  //           element wise copies are involved between Host <-> device memory
+  auto no_of_elements = max(1, n);
+  int* local_hIpiv = (int*)malloc(no_of_elements*sizeof(int));
+  HIP_CHECK(hipMemcpy(local_hIpiv, devIpiv, sizeof(int)*no_of_elements, hipMemcpyDeviceToHost));
+
+  int64_t* dIpiv;
+  HIP_CHECK(hipHostMalloc(&dIpiv, sizeof(int64_t)*no_of_elements));
+
+  for(auto i=0; i<no_of_elements; ++i) {
+      dIpiv[i] = local_hIpiv[i];
+  }
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
-  H4I::MKLShim::Cgetrs(ctxt, convert(trans), n, nrhs, (float _Complex*)A, lda, (int64_t*)devIpiv,
+  H4I::MKLShim::Cgetrs(ctxt, convert(trans), n, nrhs, (float _Complex*)A, lda, dIpiv,
                        (float _Complex*)B, ldb, (float _Complex*)work, lwork);
+
+  HIP_CHECK(hipFree(dIpiv));
+  free(local_hIpiv);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -2428,10 +2117,24 @@ hipsolverStatus_t hipsolverZgetrs(hipsolverHandle_t    handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate =true;
   }
+  // WA: MKL does not use devinfo hence setting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+  // WA: data type of devIpiv is different in MKL vs HIP and CUDA solver library
+  //     hence need special handling here. Force type cast was causing result mismatch
+  //     Note: It can have performance impact as there are extra copies and
+  //           element wise copies are involved between Host <-> device memory
+  auto no_of_elements = max(1, n);
+  int* local_hIpiv = (int*)malloc(no_of_elements*sizeof(int));
+  HIP_CHECK(hipMemcpy(local_hIpiv, devIpiv, sizeof(int)*no_of_elements, hipMemcpyDeviceToHost));
+
+  int64_t* dIpiv;
+  HIP_CHECK(hipHostMalloc(&dIpiv, sizeof(int64_t)*no_of_elements));
+
+  for(auto i=0; i<no_of_elements; ++i) {
+      dIpiv[i] = local_hIpiv[i];
+  }
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
-  H4I::MKLShim::Zgetrs(ctxt, convert(trans), n, nrhs, (double _Complex*)A, lda, (int64_t*)devIpiv,
+  H4I::MKLShim::Zgetrs(ctxt, convert(trans), n, nrhs, (double _Complex*)A, lda, dIpiv,
                        (double _Complex*)B, ldb, (double _Complex*)work, lwork);
   if (allocate)
     HIP_CHECK(hipFree(work));
@@ -2553,11 +2256,12 @@ hipsolverStatus_t hipsolverSpotrf(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
   H4I::MKLShim::Spotrf(ctxt, convert(uplo), n, A, lda, work, lwork);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -2592,11 +2296,12 @@ hipsolverStatus_t hipsolverDpotrf(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
   H4I::MKLShim::Dpotrf(ctxt, convert(uplo), n, A, lda, work, lwork);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -2631,11 +2336,12 @@ hipsolverStatus_t hipsolverCpotrf(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
   H4I::MKLShim::Cpotrf(ctxt, convert(uplo), n, (float _Complex*)A, lda, (float _Complex*)work, lwork);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -2670,11 +2376,11 @@ hipsolverStatus_t hipsolverZpotrf(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
   H4I::MKLShim::Zpotrf(ctxt, convert(uplo), n, (double _Complex*)A, lda, (double _Complex*)work, lwork);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -2795,12 +2501,12 @@ hipsolverStatus_t hipsolverSpotri(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
 
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
   H4I::MKLShim::Spotri(ctxt, convert(uplo), n, A, lda, work, lwork);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -2835,11 +2541,11 @@ hipsolverStatus_t hipsolverDpotri(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
   H4I::MKLShim::Dpotri(ctxt, convert(uplo), n, A, lda, work, lwork);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -2874,11 +2580,11 @@ hipsolverStatus_t hipsolverCpotri(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
   H4I::MKLShim::Cpotri(ctxt, convert(uplo), n, (float _Complex*)A, lda, (float _Complex*)work, lwork);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -2913,11 +2619,11 @@ hipsolverStatus_t hipsolverZpotri(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
-  // Watchout: forced typecast from int* to int64_t*
   H4I::MKLShim::Zpotri(ctxt, convert(uplo), n, (double _Complex*)A, lda, (double _Complex*)work, lwork);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -3054,7 +2760,7 @@ hipsolverStatus_t hipsolverSpotrs(hipsolverHandle_t   handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
 
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
@@ -3094,7 +2800,7 @@ hipsolverStatus_t hipsolverDpotrs(hipsolverHandle_t   handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Dpotrs(ctxt, convert(uplo), n, nrhs, A, lda, B, ldb, work, lwork);
@@ -3133,7 +2839,7 @@ hipsolverStatus_t hipsolverCpotrs(hipsolverHandle_t   handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Cpotrs(ctxt, convert(uplo), n, nrhs, (float _Complex*)A, lda, (float _Complex*)B, ldb, (float _Complex*)work, lwork);
@@ -3172,7 +2878,7 @@ hipsolverStatus_t hipsolverZpotrs(hipsolverHandle_t   handle,
     HIP_CHECK(hipMalloc(&work, lwork));
     allocate = true;
   }
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Zpotrs(ctxt, convert(uplo), n, nrhs, (double _Complex*)A, lda, (double _Complex*)B, ldb, (double _Complex*)work, lwork);
@@ -3316,12 +3022,13 @@ hipsolverStatus_t hipsolverSsytrd(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Ssytrd(ctxt, convert(uplo), n, A, lda, D, E, tau, work, lwork);
   if (allocate) {
-    hipFree(work);
+    HIP_CHECK(hipFree(work));
   }
   return HIPSOLVER_STATUS_SUCCESS;
   HIPSOLVER_CATCH("Ssytrd")
@@ -3358,12 +3065,12 @@ hipsolverStatus_t hipsolverDsytrd(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Dsytrd(ctxt, convert(uplo), n, A, lda, D, E, tau, work, lwork);
   if (allocate) {
-    hipFree(work);
+    HIP_CHECK(hipFree(work));
   }
   return HIPSOLVER_STATUS_SUCCESS;
   HIPSOLVER_CATCH("Dsytrd")
@@ -3400,12 +3107,12 @@ hipsolverStatus_t hipsolverChetrd(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Chetrd(ctxt, convert(uplo), n, (float _Complex*)A, lda, D, E, (float _Complex*)tau, (float _Complex*)work, lwork);
   if (allocate) {
-    hipFree(work);
+    HIP_CHECK(hipFree(work));
   }
   return HIPSOLVER_STATUS_SUCCESS;
   HIPSOLVER_CATCH("Chetrd")
@@ -3442,12 +3149,12 @@ hipsolverStatus_t hipsolverZhetrd(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Zhetrd(ctxt, convert(uplo), n, (double _Complex*)A, lda, D, E, (double _Complex*)tau, (double _Complex*)work, lwork);
   if (allocate) {
-    hipFree(work);
+    HIP_CHECK(hipFree(work));
   }
   return HIPSOLVER_STATUS_SUCCESS;
   HIPSOLVER_CATCH("Zhetrd")
@@ -3596,10 +3303,12 @@ hipsolverStatus_t hipsolverSsygvd(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Ssygvd(ctxt, convert(itype), convert(jobz), convert(uplo), n, A, lda, B, ldb, W, work, lwork);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -3639,10 +3348,12 @@ hipsolverStatus_t hipsolverDsygvd(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Dsygvd(ctxt, convert(itype), convert(jobz), convert(uplo), n, A, lda, B, ldb, W, work, lwork);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -3682,11 +3393,13 @@ hipsolverStatus_t hipsolverChegvd(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Chegvd(ctxt, convert(itype), convert(jobz), convert(uplo), n, (float _Complex*)A, lda,
                       (float _Complex*)B, ldb, W, (float _Complex*)work, lwork);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
@@ -3726,11 +3439,13 @@ hipsolverStatus_t hipsolverZhegvd(hipsolverHandle_t   handle,
     allocate = true;
   }
 
-  // WA: MKL does not use info hence setting it a zero
+  // WA: MKL does not use devInfo hence resetting it to zero
   HIP_CHECK(hipMemset(devInfo, 0, sizeof(int)));
+
   auto* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
   H4I::MKLShim::Zhegvd(ctxt, convert(itype), convert(jobz), convert(uplo), n, (double _Complex*)A, lda,
                       (double _Complex*)B, ldb, W, (double _Complex*)work, lwork);
+
   if (allocate)
     HIP_CHECK(hipFree(work));
   return HIPSOLVER_STATUS_SUCCESS;
