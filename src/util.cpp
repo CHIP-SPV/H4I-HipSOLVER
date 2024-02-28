@@ -9,9 +9,10 @@ hipsolverStatus_t hipsolverCreate(hipsolverHandle_t* handle){
     // HIP supports mutile backends hence query current backend name
     auto backendName = hipGetBackendName();
     // Obtain the handles to the back handlers.
-    unsigned long handles[4];
-    int           nHandles = 4;
-    hipGetBackendNativeHandles((uintptr_t)NULL, handles, &nHandles);
+    int nHandles;
+    hipGetBackendNativeHandles((uintptr_t)NULL, 0, &nHandles);
+    unsigned long handles[nHandles];
+    hipGetBackendNativeHandles((uintptr_t)NULL, handles, 0);
     *handle = H4I::MKLShim::Create(handles, nHandles, backendName);
   }
   return (*handle != nullptr) ? HIPSOLVER_STATUS_SUCCESS : HIPSOLVER_STATUS_HANDLE_IS_NULLPTR;
@@ -36,7 +37,7 @@ hipsolverStatus_t hipsolverSetStream(hipsolverHandle_t handle,
       std::array<uintptr_t, H4I::MKLShim::nHandles> nativeHandles;
       //todo: add return error check
       hipGetBackendNativeHandles(reinterpret_cast<uintptr_t>(stream),
-              nativeHandles.data(), &nHandles);
+              nativeHandles.data(), 0);
 
       H4I::MKLShim::SetStream(ctxt, nativeHandles);
   }
