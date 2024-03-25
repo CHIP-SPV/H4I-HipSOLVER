@@ -1633,7 +1633,7 @@ hipsolverStatus_t hipsolverSgetrf(hipsolverHandle_t handle,
   //     MKL's requirement is more.
   //     Note: It can have performance impact as there are extra copies and element wise copies are involved
   int64_t* local_dIpiv;
-  auto no_of_elements = max(1, min(m,n));
+  auto no_of_elements = std::max(1, std::min(m,n));
   // Allocating it on host with device access to avoid extra copy needed while accessing it from host
   HIP_CHECK(hipHostMalloc(&local_dIpiv, sizeof(int64_t)* no_of_elements));
 
@@ -1686,7 +1686,7 @@ hipsolverStatus_t hipsolverDgetrf(hipsolverHandle_t handle,
   //     MKL's requirement is more.
   //     Note: It can have performance impact as there are extra copies and element wise copies are involved
   int64_t* local_dIpiv;
-  auto no_of_elements = max(1, min(m,n));
+  auto no_of_elements = std::max(1, std::min(m,n));
   // Allocating it on host with device access to avoid extra copy needed while accessing it from host
   HIP_CHECK(hipHostMalloc(&local_dIpiv, sizeof(int64_t)* no_of_elements));
 
@@ -1740,7 +1740,7 @@ hipsolverStatus_t hipsolverCgetrf(hipsolverHandle_t handle,
   //     MKL's requirement is more.
   //     Note: It can have performance impact as there are extra copies and element wise copies are involved
   int64_t* local_dIpiv;
-  auto no_of_elements = max(1, min(m,n));
+  auto no_of_elements = std::max(1, std::min(m,n));
   // Allocating it on host with device access to avoid extra copy needed while accessing it from host
   HIP_CHECK(hipHostMalloc(&local_dIpiv, sizeof(int64_t)* no_of_elements));
 
@@ -1794,7 +1794,7 @@ hipsolverStatus_t hipsolverZgetrf(hipsolverHandle_t handle,
   //     MKL's requirement is more.
   //     Note: It can have performance impact as there are extra copies and element wise copies are involved
   int64_t* local_dIpiv;
-  auto no_of_elements = max(1, min(m,n));
+  auto no_of_elements = std::max(1, std::min(m,n));
   // Allocating it on host with device access to avoid extra copy needed while accessing it from host
   HIP_CHECK(hipHostMalloc(&local_dIpiv, sizeof(int64_t)* no_of_elements));
 
@@ -1951,7 +1951,7 @@ hipsolverStatus_t hipsolverSgetrs(hipsolverHandle_t    handle,
   //     hence need special handling here. Force type cast was causing result mismatch
   //     Note: It can have performance impact as there are extra copies and
   //           element wise copies are involved between Host <-> device memory
-  auto no_of_elements = max(1, n);
+  auto no_of_elements = std::max(1, n);
   int* local_hIpiv = (int*)malloc(no_of_elements*sizeof(int));
   HIP_CHECK(hipMemcpy(local_hIpiv, devIpiv, sizeof(int)*no_of_elements, hipMemcpyDeviceToHost));
 
@@ -2008,7 +2008,7 @@ hipsolverStatus_t hipsolverDgetrs(hipsolverHandle_t    handle,
   //     hence need special handling here. Force type cast was causing result mismatch
   //     Note: It can have performance impact as there are extra copies and
   //           element wise copies are involved between Host <-> device memory
-  auto no_of_elements = max(1, n);
+  auto no_of_elements = std::max(1, n);
   int* local_hIpiv = (int*)malloc(no_of_elements*sizeof(int));
   HIP_CHECK(hipMemcpy(local_hIpiv, devIpiv, sizeof(int)*no_of_elements, hipMemcpyDeviceToHost));
 
@@ -2065,7 +2065,7 @@ hipsolverStatus_t hipsolverCgetrs(hipsolverHandle_t    handle,
   //     hence need special handling here. Force type cast was causing result mismatch
   //     Note: It can have performance impact as there are extra copies and
   //           element wise copies are involved between Host <-> device memory
-  auto no_of_elements = max(1, n);
+  auto no_of_elements = std::max(1, n);
   int* local_hIpiv = (int*)malloc(no_of_elements*sizeof(int));
   HIP_CHECK(hipMemcpy(local_hIpiv, devIpiv, sizeof(int)*no_of_elements, hipMemcpyDeviceToHost));
 
@@ -2123,7 +2123,7 @@ hipsolverStatus_t hipsolverZgetrs(hipsolverHandle_t    handle,
   //     hence need special handling here. Force type cast was causing result mismatch
   //     Note: It can have performance impact as there are extra copies and
   //           element wise copies are involved between Host <-> device memory
-  auto no_of_elements = max(1, n);
+  auto no_of_elements = std::max(1, n);
   int* local_hIpiv = (int*)malloc(no_of_elements*sizeof(int));
   HIP_CHECK(hipMemcpy(local_hIpiv, devIpiv, sizeof(int)*no_of_elements, hipMemcpyDeviceToHost));
 

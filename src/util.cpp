@@ -12,7 +12,8 @@ hipsolverStatus_t hipsolverCreate(hipsolverHandle_t* handle){
     hipGetBackendNativeHandles((uintptr_t)NULL, 0, &nHandles);
     unsigned long handles[nHandles];
     hipGetBackendNativeHandles((uintptr_t)NULL, handles, 0);
-    *handle = H4I::MKLShim::Create(handles, nHandles);
+    char* backendName = (char*)handles[0];
+    *handle = H4I::MKLShim::Create(handles, nHandles, backendName);
     #else 
     // HIP supports mutile backends hence query current backend name
     auto backendName = hipGetBackendName();
