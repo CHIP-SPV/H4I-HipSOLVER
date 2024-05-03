@@ -7,21 +7,28 @@ hipsolverStatus_t hipsolverCreate(hipsolverHandle_t* handle){
   if(handle != nullptr)
   {
     #ifndef hipGetBackendName
-    // Obtain the handles to the back handlers.
-    int nHandles;
-    hipGetBackendNativeHandles((uintptr_t)NULL, 0, &nHandles);
-    unsigned long handles[nHandles];
-    hipGetBackendNativeHandles((uintptr_t)NULL, handles, 0);
-    char* backendName = (char*)handles[0];
-    *handle = H4I::MKLShim::Create(handles, nHandles, backendName);
+      // Obtain the handles to the back handlers.
+      int nHandles;
+      hipGetBackendNativeHandles((uintptr_t)NULL, 0, &nHandles);
+      unsigned long handles[nHandles];
+      hipGetBackendNativeHandles((uintptr_t)NULL, handles, 0);
+      char* backendName = (char*)handles[0];
+      // New implementation of hipGetBackendNativeHandles keep backend name in the Native handles
+      // Removing backend name from the list to make it sync to older native handle. This will help Shim layer remains unchanged
+      for(auto i=1; i<nHandles; ++i) {
+          handles[i-1] = handles[i];
+      }
+      handles[nHandles-1] = 0;
+      nHandles--;
+      *handle = H4I::MKLShim::Create(handles, nHandles, backendName);
     #else 
-    // HIP supports mutile backends hence query current backend name
-    auto backendName = hipGetBackendName();
-    // Obtain the handles to the back handlers.
-    unsigned long handles[4];
-    int           nHandles = 4;
-    hipGetBackendNativeHandles((uintptr_t)NULL, handles, &nHandles);
-    *handle = H4I::MKLShim::Create(handles, nHandles, backendName);
+      // HIP supports mutile backends hence query current backend name
+      auto backendName = hipGetBackendName();
+      // Obtain the handles to the back handlers.
+      unsigned long handles[4];
+      int           nHandles = 4;
+      hipGetBackendNativeHandles((uintptr_t)NULL, handles, &nHandles);
+      *handle = H4I::MKLShim::Create(handles, nHandles, backendName);
     #endif
   }
   return (*handle != nullptr) ? HIPSOLVER_STATUS_SUCCESS : HIPSOLVER_STATUS_HANDLE_IS_NULLPTR;
