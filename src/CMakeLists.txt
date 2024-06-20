@@ -47,6 +47,7 @@ install(FILES
     ${CMAKE_BINARY_DIR}/include/internal/hipsolver-functions.h
     ${CMAKE_BINARY_DIR}/include/internal/hipsolver-compat.h
     ${CMAKE_SOURCE_DIR}/include/internal/hipsolver-export.h
+    ${CMAKE_BINARY_DIR}/include/internal/hipsolver-refactor.h 
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/internal/
 )
 
