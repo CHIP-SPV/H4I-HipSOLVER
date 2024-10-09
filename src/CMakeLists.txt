@@ -1,16 +1,3 @@
-# Find HIP
-if(STANDALONE_BUILD)
-  # Build H4I-MKLShim from submodule first
-  add_subdirectory(H4I-MKLShim REQUIRED)
-  
-  # Find hip package, but exclude its H4I-MKLShim
-  set(CMAKE_IGNORE_PATH ${CMAKE_IGNORE_PATH} ${hip_DIR}/../H4I-MKLShim)
-  find_package(hip CONFIG REQUIRED)
-  
-  # Explicitly set the path to our built H4I-MKLShim
-  set(H4I_MKLShim_DIR ${CMAKE_CURRENT_BINARY_DIR}/H4I-MKLShim)
-endif()
-
 include(ExternalProject)
 option(H4I_ROCM_HIPSOLVER_TAG "Tag to use from the ROCm hipBLAS repository when obtaining its hipsolver.h header" "rocm-5.3.3")
 ExternalProject_Add(ROCmHipsolver
