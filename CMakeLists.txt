@@ -1,11 +1,4 @@
 cmake_minimum_required(VERSION 3.20)
-project(HipSOLVER
-    VERSION ${HipSOLVER_VERSION}
-    LANGUAGES CXX)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     set(STANDALONE_BUILD ON)
@@ -19,21 +12,37 @@ if(STANDALONE_BUILD AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 
 # print where the library will be installed
-message(STATUS "HipSOLVER will be installed to: ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "H4I-HipSOLVER will be installed to: ${CMAKE_INSTALL_PREFIX}")
 
-# Find HIP
-if(STANDALONE_BUILD)
-  # Build H4I-MKLShim from submodule first
-  add_subdirectory(H4I-MKLShim REQUIRED)
-  
-  # Find hip package, but exclude its H4I-MKLShim
-  set(CMAKE_IGNORE_PATH ${CMAKE_IGNORE_PATH} ${hip_DIR}/../H4I-MKLShim)
-  find_package(hip CONFIG REQUIRED)
-  
-  # Explicitly set the path to our built H4I-MKLShim
-  set(H4I_MKLShim_DIR ${CMAKE_CURRENT_BINARY_DIR}/H4I-MKLShim)
+include (${CMAKE_CURRENT_SOURCE_DIR}/CMake/HipSOLVERVersion.cmake)
+project(HipSOLVER
+    VERSION ${HipSOLVER_VERSION}
+    LANGUAGES CXX)
+
+# check if CLANG_COMPILER_PATH was passed to CMake invocation, if not, look for clang++ in PATH
+if(NOT DEFINED CLANG_COMPILER_PATH)
+    find_program(CLANG_COMPILER_PATH clang++ REQUIRED)
+    message(STATUS "Found LLVM C++ Compiler: ${CLANG_COMPILER_PATH}")
 endif()
 
+set(CMAKE_CXX_COMPILER ${CLANG_COMPILER_PATH})
+set(CMAKE_CXX_COMPILER_ID "LLVM")
+
+# We will use HIP in some fashion, no matter which platform
+# we're targeting or what parts of the software we're building.
+# Because of CMake's current assumption that HIP must require ROCm,
+# we cannot use CMake's support for HIP as a first-class language.
+# So we don't use enable_language() here, or specify it as a language
+# in the project command.
+#
+# We want to find CHIP-SPV's HIP support, which uses 'hip' (lower case)
+# as the name, not 'HIP' (upper case).
+if(STANDALONE_BUILD)
+  find_package(hip CONFIG REQUIRED)
+endif()
+
+# Ensure our users and installed tests will be able to find our
+# dependency libraries.
 include(GNUInstallDirs)
 file(RELATIVE_PATH relRPath
         ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
@@ -41,12 +50,29 @@ file(RELATIVE_PATH relRPath
     )
 set(CMAKE_INSTALL_RPATH $ORIGIN $ORIGIN/${relRPath})
 
+# Define a target capturing common configuration settings.
+# Although we use 'add_library' for this, it is not a library - 
+# just a CMake target with a collection of properties set the
+# way we want.
+# Unfortunately, it doesn't seem to be possible to set all
+# of the properties we want on this target and have them
+# be inherited by targets that "link" it.
+# In particular, we can't set a few C++ standards properties
+# and so either have to set them globally or on every target.
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(HipSOLVERCommonConfig INTERFACE)
 target_compile_features(HipSOLVERCommonConfig
     INTERFACE
         cxx_std_17
     )
-
+    
+# The primary purpose of the library is to provide a HipBLAS
+# library that uses MKL as a backend.
+# But we also support building the library's tests on a system
+# with the ROCm HipBLAS installed, to enable comparisons
+# between the behavior of this library and the ROCm implementation.
 option(H4I_USE_ROCM_HIPBLAS "Whether to use ROCm-installed hipBLAS" OFF)
 if(NOT H4I_USE_ROCM_HIPBLAS)
     # We want to use the H4I implementation.
