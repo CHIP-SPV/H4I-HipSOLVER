@@ -63,3 +63,19 @@ hipsolverStatus_t hipsolverSetStream(hipsolverHandle_t handle,
   }
   return (handle != nullptr) ? HIPSOLVER_STATUS_SUCCESS : HIPSOLVER_STATUS_HANDLE_IS_NULLPTR;
 }
+
+// helpers
+hipsolverStatus_t hipsolverDnCreate(hipsolverHandle_t* handle)
+{
+    return hipsolverCreate(handle);
+}
+
+hipsolverStatus_t hipsolverDnDestroy(hipsolverHandle_t handle)
+{
+    return hipsolverDestroy(handle);
+}
+
+hipsolverStatus_t hipsolverDnSetStream(hipsolverHandle_t handle, hipStream_t streamId)
+{
+    return hipsolverSetStream(handle, streamId);
+}
