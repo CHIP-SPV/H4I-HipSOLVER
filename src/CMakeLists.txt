@@ -43,9 +43,18 @@ if(NOT TARGET hip::host)
     message(FATAL_ERROR "hip::host target not found. Please ensure HIP is properly installed and found by CMake.")
 endif()
 
+# We rely on the MKL shim library.
+if(PROJECT_IS_TOP_LEVEL)
+    find_package(MKLShim REQUIRED)
+    set(MKL_SHIM H4I::MKLShim)
+else()
+    add_dependencies(hipsolver MKLShim)
+    set(MKL_SHIM MKLShim)
+endif()
+
 target_link_libraries(hipsolver
 	PRIVATE
-    MKLShim
+    ${MKL_SHIM}
   PUBLIC
     hip::host
   )
