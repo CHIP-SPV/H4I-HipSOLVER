@@ -6,7 +6,7 @@
 hipsolverStatus_t hipsolverCreate(hipsolverHandle_t* handle){
   if(handle != nullptr)
   {
-    #ifndef hipGetBackendName
+    #ifndef hipGetBackendName    
       // Obtain the handles to the back handlers.
       int nHandles;
       hipGetBackendNativeHandles((uintptr_t)NULL, 0, &nHandles);
@@ -47,19 +47,40 @@ hipsolverStatus_t hipsolverSetStream(hipsolverHandle_t handle,
                                      hipStream_t       stream) {
   if(handle != nullptr)
   {
-      H4I::MKLShim::Context* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
+    //todo: add return error check
+#ifndef hipGetBackendName
+    //this is a context with the native handles and the NULL stream
+    H4I::MKLShim::Context* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
+      // Obtain the backendnativehandles for the stream we want to use
+      int nHandles;
+      hipGetBackendNativeHandles( reinterpret_cast<uintptr_t>(stream), 0, &nHandles);
+      unsigned long handles[nHandles];
+      hipGetBackendNativeHandles(reinterpret_cast<uintptr_t>(stream),
+              handles, 0);
+      char* backendName = (char*)handles[0];
+      // New implementation of hipGetBackendNativeHandles keep backend name in the Native handles
+      // Removing backend name from the list to make it sync to older native handle. This will help Shim layer remains unchanged
+      for(auto i=1; i<nHandles; ++i) {
+          handles[i-1] = handles[i];
+      }
+      handles[nHandles-1] = 0;
+      nHandles--;
 
-      int nHandles = H4I::MKLShim::nHandles;
-      std::array<uintptr_t, H4I::MKLShim::nHandles> nativeHandles;
-      //todo: add return error check
-      #ifndef hipGetBackendName
-      hipGetBackendNativeHandles(reinterpret_cast<uintptr_t>(stream),
-              nativeHandles.data(), 0);
-      #else
-      hipGetBackendNativeHandles(reinterpret_cast<uintptr_t>(stream),
-              nativeHandles.data(), &nHandles);
-      #endif
-      H4I::MKLShim::SetStream(ctxt, nativeHandles);
+      //set ctext to use handles from stream
+      //      H4I::MKLShim::Update(ctxt, handles, nHandles, backendName);
+#else
+      H4I::MKLShim::Context* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
+      // HIP supports mutile backends hence query current backend name
+      auto backendName = hipGetBackendName();
+      // Obtain the handles to the back handlers.
+      unsigned long handles[4];
+      int           nHandles = 4;
+      hipGetBackendNativeHandles(reinterpret_cast<uintptr_t>(stream), handles, &nHandles);
+      //      H4I::MKLShim::Update(ctxt,handles, nHandles, backendName);
+
+#endif      
+      H4I::MKLShim::SetStream(ctxt, handles, nHandles, backendName);
+
   }
   return (handle != nullptr) ? HIPSOLVER_STATUS_SUCCESS : HIPSOLVER_STATUS_HANDLE_IS_NULLPTR;
 }
