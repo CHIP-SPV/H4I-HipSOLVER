@@ -54,12 +54,16 @@ hipsolverStatus_t hipsolverSetStream(hipsolverHandle_t handle,
       //todo: add return error check
       #ifndef hipGetBackendName
       hipGetBackendNativeHandles(reinterpret_cast<uintptr_t>(stream),
-              nativeHandles.data(), 0);
+              nativeHandles.data(), &nHandles);
+      // get name from native handles
+      char* backendName = (char*)nativeHandles[0];
+      H4I::MKLShim::SetStream(ctxt, nativeHandles.data(), nHandles, backendName);
       #else
       hipGetBackendNativeHandles(reinterpret_cast<uintptr_t>(stream),
               nativeHandles.data(), &nHandles);
-      #endif
       H4I::MKLShim::SetStream(ctxt, nativeHandles);
+      #endif
+      
   }
   return (handle != nullptr) ? HIPSOLVER_STATUS_SUCCESS : HIPSOLVER_STATUS_HANDLE_IS_NULLPTR;
 }

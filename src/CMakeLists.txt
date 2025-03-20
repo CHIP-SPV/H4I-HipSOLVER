@@ -84,3 +84,14 @@ install(FILES
 #   NAMESPACE H4I::
 # )
 
+cmake_minimum_required(VERSION 3.10)
+project(hipsolver_sample LANGUAGES CXX)
+
+add_executable(hipsolver_sample sample.cpp)
+target_link_libraries(hipsolver_sample PRIVATE hipsolver)
+target_include_directories(hipsolver_sample 
+    PRIVATE 
+    ${HIP_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    ${CMAKE_CURRENT_BINARY_DIR}/include)
+
