@@ -99,7 +99,7 @@ int main() {
     HIP_CHECK(hipMalloc(&dWork, lwork * sizeof(float)));
     
     // Execute LU factorization
-    HIPSOLVER_CHECK(hipsolverSgetrf(handle, n, n, dA, lda, dWork, dIpiv, dInfo));
+    HIPSOLVER_CHECK(hipsolverSgetrf(handle, n, n, dA, lda, dWork, lwork, dIpiv, dInfo));
     
     // Get results
     std::vector<float> result(n * n);
