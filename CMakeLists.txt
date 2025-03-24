@@ -79,3 +79,6 @@ if(NOT H4I_USE_ROCM_HIPBLAS)
     # Build our library.
     add_subdirectory(src)
 endif()
+
+# Always build samples
+add_subdirectory(samples)
