@@ -84,7 +84,13 @@ if(NOT H4I_USE_ROCM_HIPBLAS)
     
     # Build samples after the src directory to ensure the headers are generated
     add_subdirectory(samples)
+    
+    # Build tests
+    add_subdirectory(test)
 else()
     # Still build samples even with ROCm HipBLAS
     add_subdirectory(samples)
+    
+    # Build tests
+    add_subdirectory(test)
 endif()

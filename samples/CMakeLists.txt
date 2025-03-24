@@ -22,4 +22,4 @@ add_dependencies(solver_basic_test ROCmHipsolverHeaders)
 install(TARGETS solver_basic_test DESTINATION bin)
 
 # Add the test to CTest
-add_test(NAME hipsolver_basic_context_test COMMAND solver_basic_test) 
+add_test(NAME h4i-hipsolver_basic_context_test COMMAND solver_basic_test) 
