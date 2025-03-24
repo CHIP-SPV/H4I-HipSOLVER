@@ -6,30 +6,17 @@
 hipsolverStatus_t hipsolverCreate(hipsolverHandle_t* handle){
   if(handle != nullptr)
   {
-    #ifndef hipGetBackendName
-      // Obtain the handles to the back handlers.
-      int nHandles;
-      hipGetBackendNativeHandles((uintptr_t)NULL, 0, &nHandles);
-      unsigned long handles[nHandles];
-      hipGetBackendNativeHandles((uintptr_t)NULL, handles, 0);
-      char* backendName = (char*)handles[0];
-      // New implementation of hipGetBackendNativeHandles keep backend name in the Native handles
-      // Removing backend name from the list to make it sync to older native handle. This will help Shim layer remains unchanged
-      for(auto i=1; i<nHandles; ++i) {
-          handles[i-1] = handles[i];
-      }
-      handles[nHandles-1] = 0;
-      nHandles--;
-      *handle = H4I::MKLShim::Create(handles, nHandles, backendName);
-    #else 
-      // HIP supports mutile backends hence query current backend name
-      auto backendName = hipGetBackendName();
-      // Obtain the handles to the back handlers.
-      unsigned long handles[4];
-      int           nHandles = 4;
-      hipGetBackendNativeHandles((uintptr_t)NULL, handles, &nHandles);
-      *handle = H4I::MKLShim::Create(handles, nHandles, backendName);
+    #ifdef hipGetBackendName
+    std::cerr << "Error: The hipGetBackendName API is deprecated. Please update your H4I-MKLShim to use the latest API." << std::endl;
+    return HIPSOLVER_STATUS_INTERNAL_ERROR;
     #endif
+
+    // Get native handles
+    int nHandles;
+    hipGetBackendNativeHandles((uintptr_t)NULL, 0, &nHandles);
+    unsigned long handles[nHandles];
+    hipGetBackendNativeHandles((uintptr_t)NULL, handles, 0);
+    *handle = H4I::MKLShim::Create(handles, nHandles);
   }
   return (*handle != nullptr) ? HIPSOLVER_STATUS_SUCCESS : HIPSOLVER_STATUS_HANDLE_IS_NULLPTR;
 }
@@ -47,23 +34,20 @@ hipsolverStatus_t hipsolverSetStream(hipsolverHandle_t handle,
                                      hipStream_t       stream) {
   if(handle != nullptr)
   {
-      H4I::MKLShim::Context* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
+    #ifdef hipGetBackendName
+    std::cerr << "Error: The hipGetBackendName API is deprecated. Please update your H4I-MKLShim to use the latest API." << std::endl;
+    return HIPSOLVER_STATUS_INTERNAL_ERROR;
+    #endif
 
-      int nHandles = H4I::MKLShim::nHandles;
-      std::array<uintptr_t, H4I::MKLShim::nHandles> nativeHandles;
-      //todo: add return error check
-      #ifndef hipGetBackendName
-      hipGetBackendNativeHandles(reinterpret_cast<uintptr_t>(stream),
-              nativeHandles.data(), &nHandles);
-      // get name from native handles
-      char* backendName = (char*)nativeHandles[0];
-      H4I::MKLShim::SetStream(ctxt, nativeHandles.data(), nHandles, backendName);
-      #else
-      hipGetBackendNativeHandles(reinterpret_cast<uintptr_t>(stream),
-              nativeHandles.data(), &nHandles);
-      H4I::MKLShim::SetStream(ctxt, nativeHandles);
-      #endif
-      
+    H4I::MKLShim::Context* ctxt = static_cast<H4I::MKLShim::Context*>(handle);
+
+    // Get native handles from stream
+    int nHandles;
+    hipGetBackendNativeHandles(reinterpret_cast<uintptr_t>(stream), 0, &nHandles);
+    unsigned long handles[nHandles];
+    hipGetBackendNativeHandles(reinterpret_cast<uintptr_t>(stream), handles, 0);
+    // Backend name is already at index BACKEND_NAME (0), no need to modify handles array
+    H4I::MKLShim::SetStream(ctxt, handles, nHandles);
   }
   return (handle != nullptr) ? HIPSOLVER_STATUS_SUCCESS : HIPSOLVER_STATUS_HANDLE_IS_NULLPTR;
 }
