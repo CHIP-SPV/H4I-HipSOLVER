@@ -14,16 +14,19 @@ endif()
 # print where the library will be installed
 message(STATUS "H4I-HipSOLVER will be installed to: ${CMAKE_INSTALL_PREFIX}")
 
-include (${CMAKE_CURRENT_SOURCE_DIR}/CMake/HipSOLVERVersion.cmake)
-project(HipSOLVER
-    VERSION ${HipSOLVER_VERSION}
-    LANGUAGES CXX)
-
 # check if CLANG_COMPILER_PATH was passed to CMake invocation, if not, look for clang++ in PATH
 if(NOT DEFINED CLANG_COMPILER_PATH)
     find_program(CLANG_COMPILER_PATH clang++ REQUIRED)
     message(STATUS "Found LLVM C++ Compiler: ${CLANG_COMPILER_PATH}")
 endif()
+
+set(CMAKE_CXX_COMPILER ${CLANG_COMPILER_PATH})
+set(CMAKE_CXX_COMPILER_ID "LLVM")
+
+include (${CMAKE_CURRENT_SOURCE_DIR}/CMake/HipSOLVERVersion.cmake)
+project(HipSOLVER
+    VERSION ${HipSOLVER_VERSION}
+    LANGUAGES CXX)
 
 # We will use HIP in some fashion, no matter which platform
 # we're targeting or what parts of the software we're building.
