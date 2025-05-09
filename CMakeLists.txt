@@ -25,9 +25,6 @@ if(NOT DEFINED CLANG_COMPILER_PATH)
     message(STATUS "Found LLVM C++ Compiler: ${CLANG_COMPILER_PATH}")
 endif()
 
-set(CMAKE_CXX_COMPILER ${CLANG_COMPILER_PATH})
-set(CMAKE_CXX_COMPILER_ID "LLVM")
-
 # We will use HIP in some fashion, no matter which platform
 # we're targeting or what parts of the software we're building.
 # Because of CMake's current assumption that HIP must require ROCm,
