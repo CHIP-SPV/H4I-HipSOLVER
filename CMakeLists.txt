@@ -28,6 +28,7 @@ project(HipSOLVER
     VERSION ${HipSOLVER_VERSION}
     LANGUAGES CXX)
 
+enable_testing()
 # We will use HIP in some fashion, no matter which platform
 # we're targeting or what parts of the software we're building.
 # Because of CMake's current assumption that HIP must require ROCm,
