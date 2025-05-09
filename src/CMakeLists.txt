@@ -65,6 +65,10 @@ install(TARGETS hipsolver
 )
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/include/hipsolver.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/hipsolver
+)
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/include/hipsolver.h
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/
 )
 
